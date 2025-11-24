@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Resources from './pages/Resources'
 import UserManagement from './pages/UserManagement'
 import MenuManagement from './pages/MenuManagement'
+import AppConfiguration from './pages/AppConfiguration'
 import { useAuthStore } from './store/authStore'
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
                       <Route path="/" element={<Navigate to="/admin/users" />} />
                       <Route path="/users" element={<UserManagement />} />
                       <Route path="/menus" element={<MenuManagement />} />
+                      <Route path="/config" element={<AppConfiguration />} />
                     </Routes>
                   </AdminLayout>
                 } />
