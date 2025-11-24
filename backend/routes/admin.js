@@ -22,6 +22,82 @@ router.get('/users', async (req, res) => {
     }
 });
 
+// @route   PUT /api/admin/users/:userId
+// @desc    Update user information
+// @access  Admin
+router.put('/users/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { email, full_name, title } = req.body;
+        
+        await executeQuery(
+            `UPDATE users
+             SET email = @email, full_name = @fullName, title = @title, updated_at = GETDATE()
+             WHERE user_id = @userId`,
+            { userId, email, fullName: full_name, title }
+        );
+        
+        // Log audit
+        await executeQuery(
+            `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+             VALUES (@adminId, 'update_user', 'user', @userId, @details)`,
+            {
+                adminId: req.user.user_id,
+                userId,
+                details: `User information updated by ${req.user.username}`
+            }
+        );
+        
+        logger.info(`User ${userId} updated by ${req.user.username}`);
+        res.json({ message: 'User updated successfully' });
+    } catch (err) {
+        logger.error('Update user error:', err);
+        res.status(500).json({ error: 'Failed to update user' });
+    }
+});
+
+// @route   PUT /api/admin/users/:userId/password
+// @desc    Change user password
+// @access  Admin
+router.put('/users/:userId/password', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { password } = req.body;
+        
+        if (!password || password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+        
+        const bcrypt = require('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+        
+        await executeQuery(
+            `UPDATE users
+             SET password_hash = @passwordHash, updated_at = GETDATE()
+             WHERE user_id = @userId AND is_sso_user = 0`,
+            { userId, passwordHash }
+        );
+        
+        // Log audit
+        await executeQuery(
+            `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+             VALUES (@adminId, 'change_password', 'user', @userId, @details)`,
+            {
+                adminId: req.user.user_id,
+                userId,
+                details: `Password changed by admin ${req.user.username}`
+            }
+        );
+        
+        logger.info(`Password changed for user ${userId} by ${req.user.username}`);
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+        logger.error('Change password error:', err);
+        res.status(500).json({ error: 'Failed to update password' });
+    }
+});
+
 // @route   POST /api/admin/users/:userId/roles
 // @desc    Assign role to user
 // @access  Admin
