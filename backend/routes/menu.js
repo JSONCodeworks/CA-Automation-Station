@@ -38,3 +38,22 @@ router.get('/main', async (req, res) => {
 });
 
 module.exports = router;
+
+// @route   GET /api/menu/admin
+// @desc    Get admin navigation menu (alternative endpoint)
+// @access  Private (Admin)
+router.get('/admin', async (req, res) => {
+    try {
+        const result = await executeQuery(
+            `SELECT menu_id, icon, title, route, display_order, description
+             FROM navmenu_admin
+             WHERE is_active = 1
+             ORDER BY display_order ASC`
+        );
+        
+        res.json({ menuItems: result.recordset });
+    } catch (err) {
+        logger.error('Get admin menu error:', err);
+        res.status(500).json({ error: 'Failed to fetch admin menu' });
+    }
+});
