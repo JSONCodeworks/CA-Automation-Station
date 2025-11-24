@@ -16,6 +16,7 @@ const configRoutes = require('./routes/config');
 const resourceRoutes = require('./routes/resources');
 const adminRoutes = require('./routes/admin');
 const slackRoutes = require('./routes/slack');
+const menuManagementRoutes = require('./routes/menuManagement');
 
 // Import middleware
 const { authenticateJWT, isAdmin } = require('./middleware/auth');
@@ -89,6 +90,7 @@ app.use('/api/menu', authenticateJWT, menuRoutes);
 app.use('/api/config', authenticateJWT, configRoutes);
 app.use('/api/resources', authenticateJWT, resourceRoutes);
 app.use('/api/admin', authenticateJWT, isAdmin, adminRoutes);
+app.use('/api/admin/menu-management', authenticateJWT, isAdmin, menuManagementRoutes);
 app.use('/api/slack', authenticateJWT, slackRoutes);
 
 // Error handling middleware
