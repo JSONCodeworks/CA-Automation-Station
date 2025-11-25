@@ -4,6 +4,8 @@ import Layout from './components/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Resources from './pages/Resources'
+import ResourcesLanding from './pages/ResourcesLanding'
+import CyberArkTestDrive from './pages/CyberArkTestDrive'
 import UserManagement from './pages/UserManagement'
 import MenuManagement from './pages/MenuManagement'
 import AppConfiguration from './pages/AppConfiguration'
@@ -28,7 +30,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/resources/*" element={<Resources />} />
+                <Route path="/resources" element={<ResourcesLanding />} />
+                <Route path="/resources/cyberark-testdrive" element={<CyberArkTestDrive />} />
                 
                 {/* Admin Routes - No nested layout */}
                 <Route path="/admin/users" element={<UserManagement />} />
