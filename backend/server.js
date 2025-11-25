@@ -17,6 +17,9 @@ const resourceRoutes = require('./routes/resources');
 const adminRoutes = require('./routes/admin');
 const slackRoutes = require('./routes/slack');
 const menuManagementRoutes = require('./routes/menuManagement');
+const resourcesMenuRoutes = require('./routes/resourcesMenu');
+const epodTemplatesRoutes = require('./routes/epodTemplates');
+const pssRequestRoutes = require('./routes/pssRequest');
 
 // Import middleware
 const { authenticateJWT, isAdmin } = require('./middleware/auth');
@@ -92,6 +95,9 @@ app.use('/api/resources', authenticateJWT, resourceRoutes);
 app.use('/api/admin', authenticateJWT, isAdmin, adminRoutes);
 app.use('/api/admin/menu-management', authenticateJWT, isAdmin, menuManagementRoutes);
 app.use('/api/slack', authenticateJWT, slackRoutes);
+app.use('/api/resources-menu', authenticateJWT, resourcesMenuRoutes);
+app.use('/api/epod-templates', authenticateJWT, epodTemplatesRoutes);
+app.use('/api/pss-request', authenticateJWT, pssRequestRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
