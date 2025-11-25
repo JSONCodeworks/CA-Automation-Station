@@ -21,7 +21,16 @@ import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
   Logout as LogoutIcon,
-  Home as HomeIcon
+  Home as HomeIcon,
+  People as PeopleIcon,
+  MenuBook as MenuBookIcon,
+  Settings as SettingsIcon,
+  Security as SecurityIcon,
+  IntegrationInstructions as IntegrationIcon,
+  Assessment as AssessmentIcon,
+  Inventory as InventoryIcon,
+  AddCircle as AddCircleIcon,
+  AdminPanelSettings as AdminIcon
 } from '@mui/icons-material'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
@@ -93,15 +102,15 @@ export default function Layout({ children }) {
     // Map icon names to Material-UI icons
     const iconMap = {
       dashboard: <DashboardIcon />,
-      add_circle: <span className="material-icons">add_circle</span>,
-      assessment: <span className="material-icons">assessment</span>,
-      inventory: <span className="material-icons">inventory</span>,
-      settings: <span className="material-icons">settings</span>,
-      admin: <span className="material-icons">admin_panel_settings</span>,
-      people: <span className="material-icons">people</span>,
-      menu: <span className="material-icons">menu_book</span>,
-      security: <span className="material-icons">security</span>,
-      integration: <span className="material-icons">integration_instructions</span>
+      add_circle: <AddCircleIcon />,
+      assessment: <AssessmentIcon />,
+      inventory: <InventoryIcon />,
+      settings: <SettingsIcon />,
+      admin: <AdminIcon />,
+      people: <PeopleIcon />,
+      menu: <MenuBookIcon />,
+      security: <SecurityIcon />,
+      integration: <IntegrationIcon />
     }
     return iconMap[iconName] || <DashboardIcon />
   }
