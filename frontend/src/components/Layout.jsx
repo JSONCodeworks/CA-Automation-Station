@@ -30,7 +30,10 @@ import {
   Assessment as AssessmentIcon,
   Inventory as InventoryIcon,
   AddCircle as AddCircleIcon,
-  AdminPanelSettings as AdminIcon
+  AdminPanelSettings as AdminIcon,
+  CloudQueue as CloudQueueIcon,
+  CloudDone as CloudDoneIcon,
+  Computer as ComputerIcon
 } from '@mui/icons-material'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
@@ -47,13 +50,17 @@ export default function Layout({ children }) {
   const [isAdminSection, setIsAdminSection] = useState(false)
 
   useEffect(() => {
-    // Check if we're in admin section
+    // Check if we're in admin or resources section
     const inAdmin = location.pathname.startsWith('/admin')
+    const inResources = location.pathname.startsWith('/resources')
+    
     setIsAdminSection(inAdmin)
     
     // Load appropriate menu
     if (inAdmin) {
       loadAdminMenu()
+    } else if (inResources) {
+      loadResourcesMenu()
     } else {
       loadMainMenu()
     }
@@ -74,6 +81,15 @@ export default function Layout({ children }) {
       setMenuItems(response.data.menuItems || [])
     } catch (error) {
       console.error('Failed to load admin menu:', error)
+    }
+  }
+
+  const loadResourcesMenu = async () => {
+    try {
+      const response = await api.get('/resources-menu')
+      setMenuItems(response.data.menuItems || [])
+    } catch (error) {
+      console.error('Failed to load resources menu:', error)
     }
   }
 
@@ -110,21 +126,24 @@ export default function Layout({ children }) {
       people: <PeopleIcon />,
       menu: <MenuBookIcon />,
       security: <SecurityIcon />,
-      integration: <IntegrationIcon />
+      integration: <IntegrationIcon />,
+      cloud_queue: <CloudQueueIcon />,
+      cloud_done: <CloudDoneIcon />,
+      computer: <ComputerIcon />
     }
     return iconMap[iconName] || <DashboardIcon />
   }
 
   const drawer = (
     <Box sx={{ height: '100%', bgcolor: 'background.paper' }}>
-      <Toolbar sx={{ bgcolor: isAdminSection ? 'primary.dark' : 'primary.main' }}>
+      <Toolbar sx={{ bgcolor: isAdminSection ? 'primary.dark' : location.pathname.startsWith('/resources') ? 'success.main' : 'primary.main' }}>
         <Typography variant="h6" noWrap sx={{ color: 'white', fontWeight: 700 }}>
-          {isAdminSection ? 'Administration' : 'CA Automation'}
+          {isAdminSection ? 'Administration' : location.pathname.startsWith('/resources') ? 'Create Resources' : 'CA Automation'}
         </Typography>
       </Toolbar>
       
       <List sx={{ pt: 2 }}>
-        {isAdminSection && (
+        {(isAdminSection || location.pathname.startsWith('/resources')) && (
           <>
             <ListItem disablePadding>
               <ListItemButton
