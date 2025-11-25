@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import Layout from './components/Layout'
-import AdminLayout from './components/AdminLayout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Resources from './pages/Resources'
@@ -30,16 +29,12 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/resources/*" element={<Resources />} />
-                <Route path="/admin/*" element={
-                  <AdminLayout>
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/admin/users" />} />
-                      <Route path="/users" element={<UserManagement />} />
-                      <Route path="/menus" element={<MenuManagement />} />
-                      <Route path="/config" element={<AppConfiguration />} />
-                    </Routes>
-                  </AdminLayout>
-                } />
+                
+                {/* Admin Routes - No nested layout */}
+                <Route path="/admin/users" element={<UserManagement />} />
+                <Route path="/admin/menus" element={<MenuManagement />} />
+                <Route path="/admin/config" element={<AppConfiguration />} />
+                <Route path="/admin" element={<Navigate to="/admin/users" />} />
               </Routes>
             </Layout>
           ) : (
