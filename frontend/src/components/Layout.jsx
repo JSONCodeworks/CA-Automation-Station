@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   AppBar,
   Box,
@@ -20,7 +20,8 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Home as HomeIcon
 } from '@mui/icons-material'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
@@ -29,21 +30,41 @@ const drawerWidth = 260
 
 export default function Layout({ children }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout } = useAuthStore()
   const [menuItems, setMenuItems] = useState([])
   const [anchorEl, setAnchorEl] = useState(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isAdminSection, setIsAdminSection] = useState(false)
 
   useEffect(() => {
-    loadMenu()
-  }, [])
+    // Check if we're in admin section
+    const inAdmin = location.pathname.startsWith('/admin')
+    setIsAdminSection(inAdmin)
+    
+    // Load appropriate menu
+    if (inAdmin) {
+      loadAdminMenu()
+    } else {
+      loadMainMenu()
+    }
+  }, [location.pathname])
 
-  const loadMenu = async () => {
+  const loadMainMenu = async () => {
     try {
       const response = await api.get('/menu/main')
       setMenuItems(response.data.menuItems || [])
     } catch (error) {
-      console.error('Failed to load menu:', error)
+      console.error('Failed to load main menu:', error)
+    }
+  }
+
+  const loadAdminMenu = async () => {
+    try {
+      const response = await api.get('/menu/admin')
+      setMenuItems(response.data.menuItems || [])
+    } catch (error) {
+      console.error('Failed to load admin menu:', error)
     }
   }
 
@@ -64,29 +85,83 @@ export default function Layout({ children }) {
     setMobileOpen(!mobileOpen)
   }
 
+  const handleBackToDashboard = () => {
+    navigate('/dashboard')
+  }
+
   const getIcon = (iconName) => {
     // Map icon names to Material-UI icons
     const iconMap = {
       dashboard: <DashboardIcon />,
-      add_circle: <DashboardIcon />,
-      assessment: <DashboardIcon />,
-      inventory: <DashboardIcon />,
-      settings: <DashboardIcon />
+      add_circle: <span className="material-icons">add_circle</span>,
+      assessment: <span className="material-icons">assessment</span>,
+      inventory: <span className="material-icons">inventory</span>,
+      settings: <span className="material-icons">settings</span>,
+      admin: <span className="material-icons">admin_panel_settings</span>,
+      people: <span className="material-icons">people</span>,
+      menu: <span className="material-icons">menu_book</span>,
+      security: <span className="material-icons">security</span>,
+      integration: <span className="material-icons">integration_instructions</span>
     }
     return iconMap[iconName] || <DashboardIcon />
   }
 
   const drawer = (
     <Box sx={{ height: '100%', bgcolor: 'background.paper' }}>
-      <Toolbar />
-      <List>
+      <Toolbar sx={{ bgcolor: isAdminSection ? 'primary.dark' : 'primary.main' }}>
+        <Typography variant="h6" noWrap sx={{ color: 'white', fontWeight: 700 }}>
+          {isAdminSection ? 'Administration' : 'CA Automation'}
+        </Typography>
+      </Toolbar>
+      
+      <List sx={{ pt: 2 }}>
+        {isAdminSection && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleBackToDashboard}
+                sx={{
+                  mx: 1,
+                  borderRadius: 1,
+                  mb: 1,
+                  bgcolor: 'action.hover',
+                  '&:hover': {
+                    bgcolor: 'action.selected'
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: 'primary.main' }}>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Back to Dashboard"
+                  primaryTypographyProps={{ fontWeight: 600 }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <Divider sx={{ mb: 2 }} />
+          </>
+        )}
+        
         {menuItems.map((item) => (
           <ListItem key={item.menu_id} disablePadding>
             <ListItemButton
+              selected={location.pathname === item.route}
               onClick={() => navigate(item.route)}
               sx={{
+                mx: 1,
+                borderRadius: 1,
+                mb: 0.5,
+                '&.Mui-selected': {
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '& .MuiListItemIcon-root': { color: 'white' },
+                  '&:hover': {
+                    bgcolor: 'primary.dark'
+                  }
+                },
                 '&:hover': {
-                  bgcolor: 'primary.dark',
+                  bgcolor: 'action.hover',
                   '& .MuiListItemIcon-root': { color: 'primary.main' }
                 }
               }}
@@ -96,7 +171,12 @@ export default function Layout({ children }) {
               </ListItemIcon>
               <ListItemText 
                 primary={item.title}
-                sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                secondary={item.description}
+                primaryTypographyProps={{ fontWeight: 500 }}
+                secondaryTypographyProps={{ 
+                  variant: 'caption',
+                  sx: { fontSize: '0.7rem' }
+                }}
               />
             </ListItemButton>
           </ListItem>
