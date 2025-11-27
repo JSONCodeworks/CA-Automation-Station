@@ -38,7 +38,8 @@ const logger = winston.createLogger({
     transports: [
         // Write all logs to console
         new winston.transports.Console({
-            format: consoleFormat
+            format: consoleFormat,
+            level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info'
         }),
         // Write all logs with level 'error' and below to error.log
         new winston.transports.File({
@@ -65,13 +66,5 @@ const logger = winston.createLogger({
         })
     ]
 });
-
-// If we're not in production, log to console with more detail
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: consoleFormat,
-        level: 'debug'
-    }));
-}
 
 module.exports = { logger };
