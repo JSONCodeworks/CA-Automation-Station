@@ -87,10 +87,11 @@ if (SamlStrategy) {
         
         if (result.recordset.length === 0) {
           // Create new SSO user
+          // Note: password_hash is set to NULL for SSO users (they use Identity for auth)
           const insertResult = await executeQuery(
-            `INSERT INTO users (username, email, full_name, is_sso_user, is_active, created_at, updated_at)
+            `INSERT INTO users (username, email, full_name, password_hash, is_sso_user, is_active, created_at, updated_at)
              OUTPUT INSERTED.*
-             VALUES (@email, @email, @fullName, 1, 1, GETDATE(), GETDATE())`,
+             VALUES (@email, @email, @fullName, NULL, 1, 1, GETDATE(), GETDATE())`,
             { email, fullName }
           );
           
