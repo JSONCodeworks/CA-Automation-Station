@@ -246,4 +246,80 @@ router.post('/logout', authenticateJWT, async (req, res) => {
     }
 });
 
+// @route   GET /api/auth/saml
+// @desc    Initiate SAML SSO login
+// @access  Public
+router.get('/saml', 
+    passport.authenticate('saml', { 
+        failureRedirect: '/login',
+        failureFlash: true 
+    })
+);
+
+// @route   POST /api/auth/saml/callback
+// @desc    SAML SSO callback
+// @access  Public
+router.post('/saml/callback',
+    passport.authenticate('saml', { 
+        failureRedirect: '/login',
+        session: false 
+    }),
+    async (req, res) => {
+        try {
+            // Generate JWT for SSO user
+            const token = generateToken(req.user);
+            
+            // Log successful SSO login
+            await executeQuery(
+                `INSERT INTO audit_logs (user_id, action, entity_type, details)
+                 VALUES (@userId, 'sso_login', 'auth', @details)`,
+                { 
+                    userId: req.user.user_id,
+                    details: JSON.stringify({ method: 'SAML', provider: 'CyberArk Identity' })
+                }
+            );
+            
+            logger.info('SSO login successful', { 
+                user_id: req.user.user_id,
+                email: req.user.email 
+            });
+            
+            // Redirect to frontend with token
+            res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}`);
+            
+        } catch (err) {
+            logger.error('SSO callback error:', err);
+            res.redirect('/login?error=sso_failed');
+        }
+    }
+);
+
+// @route   GET /api/auth/saml/metadata
+// @desc    Get SAML metadata for IdP configuration
+// @access  Public
+router.get('/saml/metadata', (req, res) => {
+    try {
+        const samlStrategy = passport._strategy('saml');
+        if (!samlStrategy) {
+            return res.status(500).json({ error: 'SAML not configured' });
+        }
+        
+        samlStrategy.generateServiceProviderMetadata(
+            process.env.SAML_DECRYPTION_CERT || '',
+            process.env.SAML_SIGNING_CERT || '',
+            (err, metadata) => {
+                if (err) {
+                    logger.error('Metadata generation error:', err);
+                    return res.status(500).json({ error: 'Failed to generate metadata' });
+                }
+                res.type('application/xml');
+                res.send(metadata);
+            }
+        );
+    } catch (err) {
+        logger.error('Metadata endpoint error:', err);
+        res.status(500).json({ error: 'Metadata generation failed' });
+    }
+});
+
 module.exports = router;
