@@ -68,6 +68,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
 
+// Initialize SAML Strategy for CyberArk Identity SSO
+if (process.env.SAML_ENABLED === 'true') {
+    const { samlStrategy } = require('./config/saml');
+    passport.use('saml', samlStrategy);
+    logger.info('SAML SSO enabled for CyberArk Identity');
+}
+
 // Rate limiting
 const limiter = rateLimit({
     windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW) || 15) * 60 * 1000,
