@@ -70,9 +70,20 @@ require('./config/passport')(passport);
 
 // Initialize SAML Strategy for CyberArk Identity SSO
 if (process.env.SAML_ENABLED === 'true') {
-    const { samlStrategy } = require('./config/saml');
-    passport.use('saml', samlStrategy);
-    logger.info('SAML SSO enabled for CyberArk Identity');
+    try {
+        const { samlStrategy } = require('./config/saml');
+        if (samlStrategy) {
+            passport.use('saml', samlStrategy);
+            logger.info('SAML SSO enabled for CyberArk Identity');
+        } else {
+            logger.warn('SAML SSO requested but passport-saml not available');
+        }
+    } catch (err) {
+        logger.error('Failed to load SAML configuration:', err.message);
+        logger.warn('SAML SSO disabled - continuing without SSO');
+    }
+} else {
+    logger.info('SAML SSO disabled (set SAML_ENABLED=true to enable)');
 }
 
 // Rate limiting
