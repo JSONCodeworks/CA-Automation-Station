@@ -10,14 +10,34 @@ try {
   SamlStrategy = null;
 }
 
+// Function to format certificate properly
+function formatCertificate(cert) {
+  if (!cert) return '';
+  
+  // Remove any existing formatting
+  let cleaned = cert
+    .replace(/-----BEGIN CERTIFICATE-----/g, '')
+    .replace(/-----END CERTIFICATE-----/g, '')
+    .replace(/\s/g, '');
+  
+  // Add proper line breaks every 64 characters
+  const formatted = cleaned.match(/.{1,64}/g).join('\n');
+  
+  // Return with proper BEGIN/END markers
+  return `-----BEGIN CERTIFICATE-----\n${formatted}\n-----END CERTIFICATE-----`;
+}
+
+const rawCert = process.env.SAML_CERT || '';
+const formattedCert = formatCertificate(rawCert);
+
 const samlConfig = {
   // CyberArk Identity URLs
   entryPoint: process.env.SAML_ENTRY_POINT || 'https://acd4365.id.cyberark.cloud/saml/sso',
   issuer: process.env.SAML_ISSUER || 'ca-automation-station',
-  callbackUrl: process.env.SAML_CALLBACK_URL || 'http://localhost:3000/auth/callback',
+  callbackUrl: process.env.SAML_CALLBACK_URL || 'http://localhost:5000/api/auth/saml/callback',
   
-  // Certificate from CyberArk Identity
-  cert: process.env.SAML_CERT || '',
+  // Certificate from CyberArk Identity (properly formatted)
+  cert: formattedCert,
   
   // Identity Provider URLs
   identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
@@ -28,7 +48,11 @@ const samlConfig = {
   
   // Security
   signatureAlgorithm: 'sha256',
-  digestAlgorithm: 'sha256'
+  digestAlgorithm: 'sha256',
+  
+  // Accept unsigned responses for debugging (remove in production)
+  wantAssertionsSigned: false,
+  wantAuthnResponseSigned: false
 };
 
 let samlStrategy = null;
