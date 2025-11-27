@@ -146,8 +146,8 @@ initializeDatabase()
         app.listen(PORT, () => {
             logger.info(`🚀 CA Automation Station server running on port ${PORT}`);
             logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
-            logger.info(`🔐 SSO Enabled: ${process.env.SSO_ENABLED === 'true'}`);
-            logger.info(`💬 Slack Enabled: ${process.env.SLACK_ENABLED === 'true'}`);
+            logger.info(`🔐 SAML SSO: ${process.env.SAML_ENABLED === 'true' ? 'Enabled' : 'Disabled'}`);
+            logger.info(`💬 Slack Notifications: ${process.env.SLACK_ENABLED === 'true' ? 'Enabled' : 'Disabled'}`);
         });
     })
     .catch(err => {
