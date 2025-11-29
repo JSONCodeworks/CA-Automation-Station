@@ -46,9 +46,19 @@ export default function TMServiceManagement() {
     tms_icon: null
   });
   const [iconPreview, setIconPreview] = useState(null);
+  const [iconUrls, setIconUrls] = useState({}); // Store blob URLs for icons
 
   useEffect(() => {
     fetchServices();
+    
+    // Cleanup blob URLs on unmount
+    return () => {
+      Object.values(iconUrls).forEach(url => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
   }, []);
 
   const fetchServices = async () => {
@@ -56,6 +66,23 @@ export default function TMServiceManagement() {
       setLoading(true);
       const response = await api.get('/admin/tm-services');
       setServices(response.data);
+      
+      // Load icons for services that have them
+      const newIconUrls = {};
+      for (const service of response.data) {
+        if (service.has_icon) {
+          try {
+            const iconUrl = await fetchIconWithAuth(service.tms_id);
+            if (iconUrl) {
+              newIconUrls[service.tms_id] = iconUrl;
+            }
+          } catch (error) {
+            console.error(`Failed to load icon for ${service.tms_id}:`, error);
+          }
+        }
+      }
+      setIconUrls(newIconUrls);
+      
     } catch (error) {
       toast.error('Failed to load TM services');
       console.error('Error:', error);
@@ -64,7 +91,25 @@ export default function TMServiceManagement() {
     }
   };
 
-  const handleOpenDialog = (service = null) => {
+  // Fetch icon with authentication and return blob URL
+  const fetchIconWithAuth = async (tms_id) => {
+    try {
+      const response = await api.get(`/admin/tm-services/${tms_id}/icon`, {
+        responseType: 'blob' // Important: get binary data
+      });
+      
+      // Create blob URL from response
+      const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/png' });
+      const blobUrl = URL.createObjectURL(blob);
+      return blobUrl;
+      
+    } catch (error) {
+      console.error(`Error fetching icon for ${tms_id}:`, error);
+      return null;
+    }
+  };
+
+  const handleOpenDialog = async (service = null) => {
     if (service) {
       setEditMode(true);
       setCurrentService(service);
@@ -77,7 +122,8 @@ export default function TMServiceManagement() {
       
       // Load icon preview if exists
       if (service.has_icon) {
-        setIconPreview(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/tm-services/${service.tms_id}/icon?t=${Date.now()}`);
+        const iconUrl = await fetchIconWithAuth(service.tms_id);
+        setIconPreview(iconUrl);
       } else {
         setIconPreview(null);
       }
@@ -96,6 +142,10 @@ export default function TMServiceManagement() {
   };
 
   const handleCloseDialog = () => {
+    // Cleanup preview blob URL if it's a blob
+    if (iconPreview && iconPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(iconPreview);
+    }
     setOpenDialog(false);
     setEditMode(false);
     setCurrentService(null);
@@ -131,10 +181,9 @@ export default function TMServiceManagement() {
 
       handleCloseDialog();
       
-      // Force refresh to ensure icons load
-      setTimeout(() => {
-        fetchServices();
-      }, 100);
+      // Reload services and icons
+      await fetchServices();
+      
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to save TM service');
       console.error('Error:', error);
@@ -203,18 +252,12 @@ export default function TMServiceManagement() {
               {services.map((service) => (
                 <TableRow key={service.tms_id} hover>
                   <TableCell>
-                    {service.has_icon ? (
+                    {service.has_icon && iconUrls[service.tms_id] ? (
                       <Avatar
-                        key={`icon-${service.tms_id}-${service.has_icon}`}
-                        src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/tm-services/${service.tms_id}/icon?t=${Date.now()}`}
+                        key={`icon-${service.tms_id}`}
+                        src={iconUrls[service.tms_id]}
                         variant="rounded"
                         sx={{ width: 40, height: 40 }}
-                        imgProps={{
-                          onError: (e) => {
-                            console.error('Failed to load icon for:', service.tms_id);
-                            e.target.style.display = 'none';
-                          }
-                        }}
                       >
                         <ImageIcon />
                       </Avatar>
