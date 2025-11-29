@@ -75,13 +75,29 @@ router.get('/:tms_id/icon', async (req, res) => {
 
         const icon = result.recordset[0].tms_icon;
         
-        if (!icon) {
+        if (!icon || icon.length === 0) {
             return res.status(404).json({ error: 'No icon found' });
         }
 
+        // Detect image type from binary data
+        const buffer = Buffer.from(icon);
+        let contentType = 'image/png'; // default
+
+        // Check magic numbers to detect image type
+        if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+            contentType = 'image/jpeg';
+        } else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+            contentType = 'image/png';
+        } else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
+            contentType = 'image/gif';
+        } else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
+            contentType = 'image/webp';
+        }
+
         // Return binary data as image
-        res.set('Content-Type', 'image/png'); // Default to PNG, adjust if needed
-        res.send(icon);
+        res.set('Content-Type', contentType);
+        res.set('Cache-Control', 'no-cache');
+        res.send(buffer);
         
     } catch (err) {
         logger.error('Error fetching TM service icon:', err);
