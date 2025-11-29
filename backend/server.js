@@ -20,6 +20,7 @@ const menuManagementRoutes = require('./routes/menuManagement');
 const resourcesMenuRoutes = require('./routes/resourcesMenu');
 const epodTemplatesRoutes = require('./routes/epodTemplates');
 const pssRequestRoutes = require('./routes/pssRequest');
+const ispServicesRoutes = require('./routes/ispServices');
 
 // Import middleware
 const { authenticateJWT, isAdmin } = require('./middleware/auth');
@@ -112,6 +113,7 @@ app.use('/api/config', authenticateJWT, configRoutes);
 app.use('/api/resources', authenticateJWT, resourceRoutes);
 app.use('/api/admin', authenticateJWT, isAdmin, adminRoutes);
 app.use('/api/admin/menu-management', authenticateJWT, isAdmin, menuManagementRoutes);
+app.use('/api/admin/isp-services', authenticateJWT, isAdmin, ispServicesRoutes);
 app.use('/api/slack', authenticateJWT, slackRoutes);
 app.use('/api/resources-menu', authenticateJWT, resourcesMenuRoutes);
 app.use('/api/epod-templates', authenticateJWT, epodTemplatesRoutes);
