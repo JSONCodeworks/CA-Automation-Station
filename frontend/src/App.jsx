@@ -10,6 +10,7 @@ import UserManagement from './pages/UserManagement'
 import MenuManagement from './pages/MenuManagement'
 import AppConfiguration from './pages/AppConfiguration'
 import ManageISPServices from './pages/ManageISPServices'
+import TMServiceManagement from './pages/TMServiceManagement'
 import { useAuthStore } from './store/authStore'
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
                 <Route path="/admin/menus" element={<MenuManagement />} />
                 <Route path="/admin/config" element={<AppConfiguration />} />
                 <Route path="/admin/isp-services" element={<ManageISPServices />} />
+                <Route path="/admin/tm-services" element={<TMServiceManagement />} />
                 <Route path="/admin" element={<Navigate to="/admin/users" />} />
               </Routes>
             </Layout>
