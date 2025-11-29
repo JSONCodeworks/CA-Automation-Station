@@ -77,7 +77,7 @@ export default function TMServiceManagement() {
       
       // Load icon preview if exists
       if (service.has_icon) {
-        setIconPreview(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/tm-services/${service.tms_id}/icon`);
+        setIconPreview(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/tm-services/${service.tms_id}/icon?t=${Date.now()}`);
       } else {
         setIconPreview(null);
       }
@@ -130,7 +130,11 @@ export default function TMServiceManagement() {
       }
 
       handleCloseDialog();
-      fetchServices();
+      
+      // Force refresh to ensure icons load
+      setTimeout(() => {
+        fetchServices();
+      }, 100);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to save TM service');
       console.error('Error:', error);
@@ -201,9 +205,16 @@ export default function TMServiceManagement() {
                   <TableCell>
                     {service.has_icon ? (
                       <Avatar
-                        src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/tm-services/${service.tms_id}/icon`}
+                        key={`icon-${service.tms_id}-${service.has_icon}`}
+                        src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/tm-services/${service.tms_id}/icon?t=${Date.now()}`}
                         variant="rounded"
                         sx={{ width: 40, height: 40 }}
+                        imgProps={{
+                          onError: (e) => {
+                            console.error('Failed to load icon for:', service.tms_id);
+                            e.target.style.display = 'none';
+                          }
+                        }}
                       >
                         <ImageIcon />
                       </Avatar>
