@@ -11,6 +11,7 @@ import MenuManagement from './pages/MenuManagement'
 import AppConfiguration from './pages/AppConfiguration'
 import ManageISPServices from './pages/ManageISPServices'
 import TMServiceManagement from './pages/TMServiceManagement'
+import ISPPOCRequest from './pages/ISPPOCRequest'
 import { useAuthStore } from './store/authStore'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/resources" element={<ResourcesLanding />} />
                 <Route path="/resources/cyberark-testdrive" element={<CyberArkTestDrive />} />
+                <Route path="/isp-poc-request" element={<ISPPOCRequest />} />
                 
                 {/* Admin Routes - No nested layout */}
                 <Route path="/admin/users" element={<UserManagement />} />
