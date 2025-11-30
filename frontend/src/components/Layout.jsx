@@ -33,7 +33,8 @@ import {
   AdminPanelSettings as AdminIcon,
   CloudQueue as CloudQueueIcon,
   CloudDone as CloudDoneIcon,
-  Computer as ComputerIcon
+  Computer as ComputerIcon,
+  CloudUpload as CloudUploadIcon
 } from '@mui/icons-material'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
@@ -129,7 +130,8 @@ export default function Layout({ children }) {
       integration: <IntegrationIcon />,
       cloud_queue: <CloudQueueIcon />,
       cloud_done: <CloudDoneIcon />,
-      computer: <ComputerIcon />
+      computer: <ComputerIcon />,
+      cloud_upload: <CloudUploadIcon />
     }
     return iconMap[iconName] || <DashboardIcon />
   }
