@@ -46,7 +46,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { toast } from 'react-toastify';
 import api from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 // Country list (using a subset to avoid crashes - can be expanded)
 const COUNTRIES = [
@@ -97,7 +97,7 @@ const REGIONS = [
 ];
 
 export default function ISPPOCRequest() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [activeStep, setActiveStep] = useState(0);
   const [tmServices, setTmServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
